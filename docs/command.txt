@@ -1,0 +1,4 @@
+docker-compose -f docker-compose.yml up --build
+
+docker system prune -a удалить все
+docker volume prune  удалить томы

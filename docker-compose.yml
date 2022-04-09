@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  backend:
+    container_name: backend
+    build: ./backend
+    entrypoint: ./backend.sh
+    restart: unless-stopped
+    volumes:
+      - ./backend/src:/app/backend/src
+    environment:
+      - PORT=8000
+      - DB_PORT=5432
+      - DB_USER=vova
+      - DB_PASS=123
+      - DB_BASE=vinfedb
+      - DB_HOST=postgres
+      - JWT_SECRET=vinfe123
+    depends_on:
+      - postgres
+    networks:
+      - vinfe
+
+#  frontend:
+#    build: ./frontend
+#    container_name: frontend
+#    command: npm run start
+#    volumes:
+#      - ./frontend/src:/app/frontend/src
+#    restart: unless-stopped
+#    environment:
+#      - PORT=5000
+#    depends_on:
+#      - postgres
+#      - backend
+#    networks:
+#      - vinfe
+
+  postgres:
+    container_name: postgres
+    image: library/postgres:13.2
+    environment:
+      PG_DATA: /var/lib/postgresql/data
+      POSTGRES_USER: vova
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: vinfedb
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - vinfe
+
+  nginx:
+    image: library/nginx:stable-alpine
+    container_name: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/nginx.conf.prod:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+     # - frontend
+      - backend
+      - postgres
+    networks:
+      - vinfe
+
+volumes:
+  pgdata:
+
+networks:
+  vinfe:
+    driver: bridge
